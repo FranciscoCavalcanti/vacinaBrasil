@@ -19,9 +19,11 @@ library(ggplot2)
 library(vacinaBrasil)
 
 fonte <- stringr::str_glue(
-  "Fonte:\n",
-  "População: PNAD Contínua\n",
-  "Vacinação: Open DataSus"
+  "Códigos reproducibles:\n",
+  "https://github.com/jtrecenti/vacinaBrasil \n",
+  "Fuente de datos \n",
+  "Poblacion: PNAD Contínua\n",
+  "Vacunación: Open DataSus"
 )
 
 dose <- datasus_idade_sexo_dose %>% 
@@ -39,8 +41,14 @@ pop <- pop_idade_sexo %>%
 
 dados <- dplyr::bind_rows(pop, dose)
 
+dados$tipo[dados$tipo == "1ª Dose"] <- "1ra Dosis"
+dados$tipo[dados$tipo == "2ª Dose"] <- "2da Dosis"
+dados$sexo[dados$sexo == "Homem"] <- "Hombre"
+dados$sexo[dados$sexo == "Mulher"] <- "Mujer"
+dados$tipo[dados$tipo == "População"] <- "Población"
+
 dados %>% 
-  dplyr::mutate(n = n * ((sexo == "Homem") * 2 -1)) %>% 
+  dplyr::mutate(n = n * ((sexo == "Hombre") * 2 -1)) %>% 
   dplyr::mutate(tipo = forcats::lvls_reorder(tipo, c(2, 1, 3))) %>% 
   ggplot(aes(x = n, y = factor(idade), fill = sexo, alpha = tipo)) +
   geom_col(width = 1, position = "identity") +
@@ -50,22 +58,22 @@ dados %>%
     labels = paste0(abs(seq(-1500, 1500, 500)), "K")
   ) +
   scale_y_discrete(breaks = seq(0, 100, 10)) + 
-  scale_fill_viridis_d(begin = .3, end = .8, option = "C") +
+  scale_fill_viridis_d(begin = .3, end = .8, option = "F") +
   scale_alpha_manual(values = c(1, .6, .3)) +
   theme_minimal() +
   labs(
-    x = "População", 
-    y = "Idade",
+    x = "Población", 
+    y = "Edad",
     fill = "",
     alpha = "",
-    title = "Vacinação no Brasil",
+    title = "Vacunación en Brasil",
     caption = fonte
   ) +
-  guides(fill = guide_legend(reverse = TRUE)) +
+  guides(fill = guide_legend(reverse = FALSE)) +
   theme(
     panel.grid.minor = element_blank(),
     axis.text.y = element_blank(),
-    legend.position = "top",
+    legend.position = "bottom",
     plot.title = element_text(hjust = .5)
   )
 ```
